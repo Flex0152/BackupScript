@@ -2,7 +2,7 @@
 
 Daily, space-efficient snapshots of my home server using rsync, containerized and monitored with Prometheus.
 
-## About the project
+## 🎯 About the project
 
 My home server has grown: it runs containerized services for home automation, Pi-hole, databases and a complete monitoring stack. Until now, there was no backup. This project closes that gap.
 
@@ -16,7 +16,7 @@ flowchart LR
     PROM[Prometheus] -->|scrape| PGW
 ```
 
-## Features
+## 📖 Features
 
 - **Full snapshots with minimal disk usage:** Unchanged files are hardlinked to the previous snapshot via `--link-dest`. Every snapshot is complete, but only changed files take up additional space.
 - **No partial backups:** A run first writes into a `*.incomplete` folder and only renames it after it has finished successfully. Aborted runs are never used as the base for the next snapshot.
@@ -24,12 +24,12 @@ flowchart LR
 - **Automatic rotation:** The 14 most recent snapshots are kept.
 - **Monitoring:** Success, duration, time of the last successful backup and rsync statistics are pushed to Prometheus via the Pushgateway.
 
-## Requirements
+## 📋 Requirements
 
 - Linux host with Podman and `podman-compose` (or `podman compose`)
 - A backup target whose file system supports **hardlinks** (e.g. ext4, XFS, Btrfs, or an SMB share backed by NTFS). FAT32 and exFAT are not suitable.
 
-## Installation
+## 💾 Installation
 
 ### 1. Clone the repository
 
@@ -107,14 +107,14 @@ systemctl --user enable --now backup-app.timer
 loginctl enable-linger "$USER"   # run the timer even when the user is not logged in
 ```
 
-## Configuration
+## 🔧 Configuration
 
 | Variable          | Default                        | Description                        |
 |-------------------|--------------------------------|------------------------------------|
 | `PUSHGATEWAY_URL` | `prometheus-pushgateway:9091`  | Address of the Pushgateway         |
 | `BACKUP_INSTANCE` | `backup-app`                   | `instance` label of the metrics    |
 
-## Snapshots and restore
+## 🧯 Snapshots and restore
 
 Each run creates one folder on the backup target:
 
@@ -131,7 +131,7 @@ Every folder contains the complete state at that point in time. To restore, simp
 rsync -a /mnt/backup/2026-10-10_02-00-02/ /path/to/destination/
 ```
 
-## Metrics
+## 📈 Metrics
 
 | Metric                                    | Meaning                                       |
 |-------------------------------------------|-----------------------------------------------|
@@ -158,12 +158,12 @@ groups:
 
 `BackupTooOld` also fires when the backup stops running altogether and therefore cannot report a failure.
 
-## Design decisions
+## 🖌️ Design decisions
 
 - **Pushgateway instead of an exporter:** The script is a short-lived job that exits after the backup. Prometheus could not scrape it reliably, so it pushes its metrics at the end of each run.
 - **`pushadd` instead of `push`:** On failure, `backup_last_success_timestamp_seconds` from the last successful run is preserved instead of being overwritten.
 - **No `latest` symlink:** Many network shares do not support symlinks. Instead, the previous snapshot is determined from the sortable timestamp folder names.
 
-## License
+## 📄 License
 
 This project is released under the [MIT License](LICENSE).
