@@ -1,0 +1,34 @@
+services:
+  prometheus:
+    image: docker.io/prom/prometheus:latest
+    container_name: prometheus
+    userns_mode: "keep-id:uid=65534,gid=65534"
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro,Z
+      - ./prometheus/data:/prometheus:Z
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.retention.time=15d
+    restart: unless-stopped
+
+  prometheus-pushgateway:
+    image: docker.io/prom/pushgateway:latest
+    container_name: prometheus-pushgateway
+    userns_mode: "keep-id:uid=65534,gid=65534"
+    ports:
+      - "9091:9091"
+    environment:
+      PUSHGATEWAY_URL: prometheus-pushgateway:9091
+      BACKUP_INSTANCE: backup-app
+    restart: unless-stopped
+
+  backup-app:
+    build: .
+    container_name: backup-app
+    volumes:
+      - /mnt/backup/:/mnt/backup
+      - ./app/logs/:/app/logs/
+      - ./data/src/:/src:ro
+      - ./app/main.py:/app/main.py
